@@ -1,0 +1,16 @@
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\bin\Debug\ShaartyMouseFix.exe.config
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\bin\Debug\ShaartyMouseFix.exe
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\bin\Debug\ShaartyMouseFix.pdb
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\ShaartyMouseFix.csprojResolveAssemblyReference.cache
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\MainWindow.g.cs
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\App.g.cs
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\ShaartyMouseFix_MarkupCompile.cache
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\ShaartyMouseFix_MarkupCompile.lref
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\MainWindow.baml
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\ShaartyMouseFix.g.resources
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\ShaartyMouseFix.Properties.Resources.resources
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\ShaartyMouseFix.csproj.GenerateResource.Cache
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\ShaartyMouseFix.exe
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\ShaartyMouseFix.pdb
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\bin\Debug\MouseKeyboardActivityMonitor.dll
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\bin\Debug\MouseKeyboardActivityMonitor.xml
