@@ -1,10 +1,7 @@
 ﻿/*
  * TODO:
- * 1. Cancel click event (How?)
- * 2. Configure click time threshold
- * 3. Catch wrong mouse click
- * 4. Remove Windows Tips (debug)
- * 5. Stopwatch correction
+ * 1. Configure click time threshold
+ * 2. Remove Windows Tips (debug)
  */
 
 using System;
@@ -48,16 +45,27 @@ namespace ShaartyMouseFix
         private const string STRING_TRAY_TEXT = "Shaarty MouseFix - fix your mouse double clicks";
         private const string STRING_TRAY_TIP_TITLE = "Shaarty MouseFix";
         private const string STRING_TRAY_TIP_TEXT = "Program started";
+        private const string STRING_CATCHED_WRONG_CLICKS = "Catched";
+        private const string STRING_EXIT = "Exit";
         #endregion
 
         /// <summary>
         /// Time between clicks, ms
         /// </summary>
-        private int __timeDelay = 300;
+        private int __timeDelay = 100;
+        private int __catchedWrongClicks;
+        /// <summary>
+        /// Time (ms) when tip is visible
+        /// </summary>
+        private const int TIP_TIMEOUT = 200;
         Stopwatch stopWatch = new Stopwatch();
+        Stopwatch timer_LeftClick, timer_RightClick, timer_MiddleClick, 
+            timer_X1Click, timer_X2Click;
 
         public App()
         {
+            __catchedWrongClicks = 0;
+
             nIcon = new System.Windows.Forms.NotifyIcon();
             nIcon.Text = STRING_TRAY_TEXT;
             nIcon.Icon = ShaartyMouseFix.Properties.Resources.IconDef;
@@ -70,14 +78,14 @@ namespace ShaartyMouseFix
             TrayMenu = new ContextMenu();
             // -- CATCHED ----
             MenuItem _miCatched = new MenuItem();
-            _miCatched.Header = "Catched 0";
+            _miCatched.Header = STRING_CATCHED_WRONG_CLICKS + " " + 0;
             _miCatched.Click += NullClick;
             TrayMenu.Items.Add(_miCatched);
             // -- SEPARATOR ----
             TrayMenu.Items.Add(new Separator());
             // -- DELAY INFO ----
             MenuItem _miClickDelay = new MenuItem();
-            _miClickDelay.Header = STRING_TIME_DELAY + ": 100 " + STRING_TIME_UNIT;
+            _miClickDelay.Header = STRING_TIME_DELAY + ": " + __timeDelay + " " + STRING_TIME_UNIT;
             _miClickDelay.Click += NullClick;
             TrayMenu.Items.Add(_miClickDelay);
             // -- DELAY SLIDER ----
@@ -95,7 +103,7 @@ namespace ShaartyMouseFix
             TrayMenu.Items.Add(new Separator());
             // -- EXIT ----
             MenuItem _miExit = new MenuItem();
-            _miExit.Header = "Exit";
+            _miExit.Header = STRING_EXIT;
             _miExit.Click += App_Exit;
             TrayMenu.Items.Add(_miExit);
             #endregion TRAY MENU INITIALIZATION
@@ -112,11 +120,24 @@ namespace ShaartyMouseFix
             */
             m_MouseHookManager = new MouseHookListener(new GlobalHooker());
             m_MouseHookManager.Enabled = true;
-            m_MouseHookManager.MouseDown += HookManager_MouseDown;
             m_MouseHookManager.MouseUp += HookManager_MouseUp;
             m_MouseHookManager.MouseClick += HookManager_MouseClick;
+            m_MouseHookManager.MouseDownExt += HookManager_MouseDownExt;
             #endregion
 
+            #region TIMERS INIT AND START
+            timer_LeftClick = new Stopwatch();
+            timer_RightClick = new Stopwatch();
+            timer_MiddleClick = new Stopwatch();
+            timer_X1Click = new Stopwatch();
+            timer_X2Click = new Stopwatch();
+
+            timer_LeftClick.Start();
+            timer_MiddleClick.Start();
+            timer_RightClick.Start();
+            timer_X1Click.Start();
+            timer_X2Click.Start();
+            #endregion
         }
 
         #region Keyboard Handle (OFF)
@@ -136,40 +157,92 @@ namespace ShaartyMouseFix
         #endregion
 
         #region Mouse Handle (ON)
-        private void HookManager_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        private bool isHandleButton(ref Stopwatch buttonTimer, ref MouseEventExtArgs e)
         {
-            stopWatch.Start();
-            //nIcon.ShowBalloonTip(3000, STRING_TRAY_TIP_TITLE, e.Button.ToString() + " Pressed",
-            //    System.Windows.Forms.ToolTipIcon.Info);
+            buttonTimer.Stop();
+            if (buttonTimer.ElapsedMilliseconds < __timeDelay)
+            {
+                buttonTimer.Start();
+                return true;
+            }
+            else
+            {
+                buttonTimer.Restart();
+                return false;
+            }
+        }
+
+        private void HookManager_MouseDownExt(object sender, MouseEventExtArgs e)
+        {
+            e.Handled = false;
+            switch (e.Button)
+            {
+                case System.Windows.Forms.MouseButtons.Left:
+                    //e.Handled = isHandleButton(ref timer_LeftClick, ref e);
+                    break;
+                case System.Windows.Forms.MouseButtons.Middle:
+                    e.Handled = isHandleButton(ref timer_MiddleClick, ref e);
+                    break;
+                case System.Windows.Forms.MouseButtons.Right:
+                    e.Handled = isHandleButton(ref timer_RightClick, ref e);
+                    break;
+                case System.Windows.Forms.MouseButtons.XButton1:
+                    e.Handled = isHandleButton(ref timer_X1Click, ref e);                    
+                    break;
+                case System.Windows.Forms.MouseButtons.XButton2:
+                    e.Handled = isHandleButton(ref timer_X2Click, ref e);                    
+                    break;
+                default:
+                    break;
+            }
+            if (e.Handled)
+            {
+                __catchedWrongClicks++;
+                ((MenuItem)TrayMenu.Items[0]).Header = STRING_CATCHED_WRONG_CLICKS + " " + __catchedWrongClicks;
+                nIcon.ShowBalloonTip(TIP_TIMEOUT, STRING_TRAY_TIP_TITLE,
+                    System.DateTime.Now + " [Handled] " + e.Button.ToString() + " down",
+                    System.Windows.Forms.ToolTipIcon.Info);
+            }
+            else
+            {
+                if (e.Button != System.Windows.Forms.MouseButtons.Left)
+                {
+                    nIcon.ShowBalloonTip(TIP_TIMEOUT, STRING_TRAY_TIP_TITLE,
+                        System.DateTime.Now + " " + e.Button.ToString() + " down",
+                        System.Windows.Forms.ToolTipIcon.Info);
+                }
+            }
         }
 
         private void HookManager_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            stopWatch.Stop();
-            int elapsedMs = stopWatch.Elapsed.Milliseconds;
+        //    stopWatch.Stop();
+        //    int elapsedMs = stopWatch.Elapsed.Milliseconds;
 
-            if (elapsedMs < __timeDelay)
-            {
-                nIcon.ShowBalloonTip(3000, STRING_TRAY_TIP_TITLE, e.Button.ToString() 
-                    + " Released - U. ms: " + elapsedMs,
-                    System.Windows.Forms.ToolTipIcon.Info);
-                return;
-            }
-            else
-            {
-                nIcon.ShowBalloonTip(3000, STRING_TRAY_TIP_TITLE, e.Button.ToString() 
-                    + " Released - H. ms: " + elapsedMs,
-                    System.Windows.Forms.ToolTipIcon.Info);                
-            }
+        //    if (elapsedMs < __timeDelay)
+        //    {
+        //        nIcon.ShowBalloonTip(3000, STRING_TRAY_TIP_TITLE, e.Button.ToString() 
+        //            + " Released - U. ms: " + elapsedMs,
+        //            System.Windows.Forms.ToolTipIcon.Info);
+        //        return;
+        //    }
+        //    else
+        //    {
+        //        nIcon.ShowBalloonTip(3000, STRING_TRAY_TIP_TITLE, e.Button.ToString() 
+        //            + " Released - H. ms: " + elapsedMs,
+        //            System.Windows.Forms.ToolTipIcon.Info);                
+        //    }
         }
 
         private void HookManager_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             //stopWatch.Start();
-           
-            nIcon.ShowBalloonTip(3000, STRING_TRAY_TIP_TITLE, 
-                System.DateTime.Now + " "+ e.Button.ToString() + " Click | Sender: " + sender.ToString(),
-                System.Windows.Forms.ToolTipIcon.Info);
+            //if (e.Button != System.Windows.Forms.MouseButtons.Left)
+            //{
+            //    nIcon.ShowBalloonTip(3000, STRING_TRAY_TIP_TITLE,
+            //        System.DateTime.Now + " " + e.Button.ToString() + " Click | Sender: " + sender.ToString(),
+            //        System.Windows.Forms.ToolTipIcon.Info);
+            //}
             //nIcon.ShowBalloonTip(3000, STRING_TRAY_TIP_TITLE, e.Button.ToString() + " Pressed",
             //    System.Windows.Forms.ToolTipIcon.Info);
         }
