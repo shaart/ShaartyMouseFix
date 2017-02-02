@@ -4,11 +4,11 @@
 winexe
 C#
 .cs
-D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Debug\
+D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\obj\Release\
 ShaartyMouseFix
 none
 false
-DEBUG;TRACE
+TRACE
 D:\GitHub\ShaartyMouseFix\ShaartyMouseFix\ShaartyMouseFix\App.xaml
 
 
